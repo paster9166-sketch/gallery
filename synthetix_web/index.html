@@ -3,39 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synthetix Gallery</title>
+    <title>Syntetix Arte Gallery</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #0e0e0e; color: #ffffff; font-family: 'Helvetica', sans-serif; margin: 0; padding: 20px; }
-        .header { text-align: center; border-bottom: 1px solid #d4af37; padding-bottom: 10px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .item-card { background: #1a1a1a; border-radius: 10px; overflow: hidden; border: 0.5px solid #333; }
-        .item-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
-        .item-info { padding: 10px; font-size: 12px; }
-        .price { color: #d4af37; font-weight: bold; }
-        .btn { background: #d4af37; color: #000; border: none; width: 100%; padding: 8px; margin-top: 5px; border-radius: 5px; font-weight: bold; }
+        :root {
+            --accent-color: #d4af37; /* Золотой */
+            --bg-color: #0e0e0e;    /* Глубокий черный */
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            -webkit-user-select: none;
+            line-height: 1.4;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header h2 {
+            letter-spacing: 4px;
+            margin: 0;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            font-size: 22px;
+        }
+
+        .header p {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 0.5px solid #333;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-card:active {
+            transform: scale(0.96);
+            border-color: var(--accent-color);
+        }
+
+        .item-img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            background: #222;
+        }
+
+        .item-info {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .item-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-meta {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .price {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .btn-select {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        #loader {
+            text-align: center;
+            color: var(--text-dim);
+            padding: 40px;
+        }
     </style>
 </head>
 <body>
+
     <div class="header">
-        <h2 style="letter-spacing: 2px;">SYNTHETIX</h2>
-        <p style="font-size: 10px; color: #888;">SANTIAGO DE SURCO | LIMA</p>
+        <h2>SYNTETIX ARTE</h2>
+        <p>Santiago de Surco | Lima, Perú</p>
     </div>
-    
-    <div class="grid">
-        <div class="item-card">
-            <img src="https://via.placeholder.com/250" class="item-img">
-            <div class="item-info">
-                <div>ART-001 "Ocean"</div>
-                <div class="price">450 PEN</div>
-                <button class="btn" onclick="tg.close()">СМОТРЕТЬ</button>
-            </div>
-        </div>
-    </div>
+
+    <div id="loader">Загрузка коллекции...</div>
+    <div class="grid" id="gallery-grid"></div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
+        tg.ready();
+
+        // Настройка главной кнопки Telegram
+        tg.MainButton.setParams({
+            text: "ЗАКРЫТЬ ГАЛЕРЕЮ",
+            color: "#d4af37",
+            text_color: "#000000"
+        });
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => tg.close());
+
+        async function loadGallery() {
+            const grid = document.getElementById('gallery-grid');
+            const loader = document.getElementById('loader');
+
+            try {
+                // Загружаем данные из твоего JSON файла на GitHub
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error('Ошибка загрузки данных');
+                
+                const data = await json.parse(await response.text());
+                
+                loader.style.display = 'none';
+                grid.innerHTML = '';
+
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.onclick = () => selectItem(item.id);
+
+                    // Используем заглушку, пока не настроим передачу реальных фото
+                    const imgUrl = `https://via.placeholder.com/300/1a1a1a/d4af37?text=SYNTETIX+${item.id}`;
+
+                    card.innerHTML = `
+                        <img src="${imgUrl}" class="item-img" alt="${item.title}">
+                        <div class="item-info">
+                            <div>
+                                <div class="item-title">${item.title}</div>
+                                <div class="item-meta">${item.type} | ${item.size}</div>
+                            </div>
+                            <div>
+                                <div class="price">${item.price}</div>
+                                <button class="btn-select">Выбрать</button>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                loader.innerText = 'Коллекция временно недоступна.';
+            }
+        }
+
+        function selectItem(id) {
+            // Виброотклик при нажатии
+            tg.HapticFeedback.impactOccurred('medium');
+            // Отправка ID боту
+            tg.sendData(id.toString());
+        }
+
+        // Запуск загрузки при открытии
+        loadGallery();
     </script>
 </body>
 </html>

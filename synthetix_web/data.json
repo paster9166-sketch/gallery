@@ -1,0 +1,23 @@
+[
+    {
+        "id": 1,
+        "title": "Catarata",
+        "price": "1000 PEN",
+        "size": "100x100",
+        "type": "Картина"
+    },
+    {
+        "id": 2,
+        "title": "lotus",
+        "price": "1000 PEN",
+        "size": "100x100",
+        "type": "Картина"
+    },
+    {
+        "id": 3,
+        "title": "Тестовая Картина",
+        "price": "450 PEN",
+        "size": "80x60",
+        "type": "Картина"
+    }
+]
