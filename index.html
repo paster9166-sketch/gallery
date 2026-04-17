@@ -2,40 +2,230 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synthetix Gallery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SYNTETIX ARTE</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #0e0e0e; color: #ffffff; font-family: 'Helvetica', sans-serif; margin: 0; padding: 20px; }
-        .header { text-align: center; border-bottom: 1px solid #d4af37; padding-bottom: 10px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .item-card { background: #1a1a1a; border-radius: 10px; overflow: hidden; border: 0.5px solid #333; }
-        .item-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
-        .item-info { padding: 10px; font-size: 12px; }
-        .price { color: #d4af37; font-weight: bold; }
-        .btn { background: #d4af37; color: #000; border: none; width: 100%; padding: 8px; margin-top: 5px; border-radius: 5px; font-weight: bold; }
+        :root {
+            --accent-color: #d4af37;
+            --bg-color: #0e0e0e;
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-secondary: #888888;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Helvetica', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            background: linear-gradient(to bottom, #151515, var(--bg-color));
+        }
+
+        .header h1 {
+            letter-spacing: 4px;
+            margin: 0;
+            color: var(--accent-color);
+            font-size: 22px;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-card:active {
+            transform: scale(0.96);
+            border-color: var(--accent-color);
+        }
+
+        .item-img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            background: #222;
+        }
+
+        .item-info {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .item-title {
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-transform: uppercase;
+        }
+
+        .item-type {
+            font-size: 9px;
+            color: var(--text-secondary);
+        }
+
+        .item-price {
+            color: var(--accent-color);
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .btn-select {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 10px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Анимация появления */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item-card {
+            animation: fadeIn 0.4s ease forwards;
+        }
     </style>
 </head>
 <body>
+
     <div class="header">
-        <h2 style="letter-spacing: 2px;">SYNTHETIX</h2>
-        <p style="font-size: 10px; color: #888;">SANTIAGO DE SURCO | LIMA</p>
+        <h1>SYNTETIX ARTE</h1>
+        <p>Santiago de Surco | Lima, Perú</p>
     </div>
-    
-    <div class="grid">
-        <div class="item-card">
-            <img src="https://via.placeholder.com/250" class="item-img">
-            <div class="item-info">
-                <div>ART-001 "Ocean"</div>
-                <div class="price">450 PEN</div>
-                <button class="btn" onclick="tg.close()">СМОТРЕТЬ</button>
-            </div>
+
+    <div class="container">
+        <div id="gallery-grid" class="grid">
+            <div class="loading">Загрузка коллекции...</div>
         </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
+        tg.ready();
+
+        // Цветовая схема кнопки под бренд
+        tg.MainButton.setParams({
+            text: "ЗАКРЫТЬ",
+            color: "#d4af37",
+            text_color: "#000000"
+        });
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => tg.close());
+
+        const galleryGrid = document.getElementById('gallery-grid');
+
+        // Функция загрузки данных
+        async function loadGallery() {
+            try {
+                // Добавляем timestamp, чтобы GitHub не кэшировал старый список
+                const response = await fetch('data.json?t=' + Date.now());
+                if (!response.ok) throw new Error('Данные не найдены');
+                
+                const data = await response.json();
+                renderGallery(data);
+            } catch (error) {
+                console.error(error);
+                galleryGrid.innerHTML = `
+                    <div class="error">
+                        <p>Пока здесь пусто...</p>
+                        <p style="font-size: 10px">Загрузите data.json на GitHub</p>
+                    </div>`;
+            }
+        }
+
+        // Функция отрисовки карточек
+        function renderGallery(items) {
+            galleryGrid.innerHTML = ''; // Очищаем лоадер
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.onclick = () => selectItem(item.id);
+
+                // Используем заглушку, так как фото лежат в БД
+                // Позже мы научимся передавать ссылки на превью
+                const placeholderImg = `https://via.placeholder.com/300/1a1a1a/d4af37?text=${encodeURIComponent(item.title)}`;
+
+                card.innerHTML = `
+                    <img src="${placeholderImg}" class="item-img" alt="${item.title}">
+                    <div class="item-info">
+                        <div class="item-type">${item.type} | ${item.size}</div>
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-price">${item.price}</div>
+                        <button class="btn-select">Выбрать</button>
+                    </div>
+                `;
+                galleryGrid.appendChild(card);
+            });
+        }
+
+        function selectItem(id) {
+            // Виброотклик при нажатии
+            tg.HapticFeedback.impactOccurred('medium');
+            // Отправка ID боту
+            tg.sendData(id.toString());
+        }
+
+        // Инициализация
+        loadGallery();
     </script>
 </body>
 </html>
